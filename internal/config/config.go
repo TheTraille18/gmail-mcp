@@ -22,6 +22,20 @@ func Load() Config {
 		token = filepath.Join("credentials", "token.json")
 	}
 
+	// ECS/Secrets Manager: inject JSON via env and materialize under /tmp.
+	if raw := os.Getenv("GOOGLE_CREDENTIALS_JSON"); raw != "" {
+		path := filepath.Join(os.TempDir(), "gmail-credentials.json")
+		if err := os.WriteFile(path, []byte(raw), 0o600); err == nil {
+			creds = path
+		}
+	}
+	if raw := os.Getenv("GOOGLE_TOKEN_JSON"); raw != "" {
+		path := filepath.Join(os.TempDir(), "gmail-token.json")
+		if err := os.WriteFile(path, []byte(raw), 0o600); err == nil {
+			token = path
+		}
+	}
+
 	user := os.Getenv("GMAIL_USER")
 	if user == "" {
 		user = "me"
